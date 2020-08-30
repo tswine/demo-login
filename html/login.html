@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登陆页面</title>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="js/tool.js"></script>
+    <style>
+        div {
+            width: 200px;
+            margin: 0 auto;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function() {
+            $("#btnClick").click(function() {
+                var userName = $("#userName").val();
+                var passWord = $("#passWord").val();
+                var params = {
+                    userName,
+                    passWord
+                };
+                tool.request("/logon/login", "post", params, function(data) {
+                    window.alert("登录成功");
+                    window.location.href = "index.html?token=" + data;
+                });
+            });
+        })
+    </script>
+</head>
+
+<body>
+    <div>
+        用户名：<input id="userName" type="text" value="silly" /> <br/> 密码： <input type="passWord" id="passWord" value="123456">
+        <input type="button" id="btnClick" value="登录" />
+    </div>
+</body>
+
+</html>

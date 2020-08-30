@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="js/tool.js"></script>
+    <title>主页</title>
+    <style>
+        div {
+            width: 500px;
+            margin: 0 auto;
+        }
+        
+        hr {
+            width: 500px;
+            margin: 20px auto;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function() {
+            //隐藏编辑或增加框
+            $("#addOrEdit").hide();
+            init();
+
+            //展示添加框
+            $("#btnAdd").on("click", function() {
+                $("#addOrEdit").show();
+                $("#viewOperate").hide();
+            });
+
+            //添加或编辑
+            $("#btnAddOrEdit").on("click", function() {
+                var id = $("#id").val();
+                var params = {
+                    token: getToken(),
+                    userName: $("#userName").val(),
+                    passWord: $("#passWord").val()
+                };
+                var url = "/logon/add";
+                var msg = "添加用户成功";
+                //判断为添加还是编辑操作
+                if (tool.isNotNull(id)) {
+                    //编辑操作
+                    url = "/logon/edit";
+                    params.id = id;
+                    msg = "编辑用户成功";
+                }
+                tool.request(url, "post", params, function(data) {
+                    window.alert(msg);
+                    //重新加载数据
+                    init();
+                    //展示按钮视图区
+                    $("#viewOperate").show();
+                    //隐藏自己
+                    $("#addOrEdit").hide();
+                    resetAddOrEditView();
+                });
+
+            });
+        });
+
+        /*初始化数据*/
+        function init() {
+            var params = {
+                token: getToken(),
+            };
+            tool.request("/logon/list", "post", params, function(data) {
+                var tbody = "";
+                $.each(data, function(index, item) {
+                    var trs = "";
+                    trs += "<tr>" +
+                        "<td>" + item.id + "</td>" +
+                        "<td>" + item.userName + "</td>" +
+                        "<td>" + item.passWord + "</td>" +
+                        "<td>" +
+                        "<input type='button' value='编辑' onclick='edit(" + item.id + ")'/>" +
+                        " <input type='button' value='删除' onclick=\"del(" + item.id + ",'" + item.userName + "')\"/>" +
+                        "</td>" +
+                        "</tr>";
+                    tbody += trs;
+                });
+                $("#content").html(tbody);
+            })
+        }
+
+        /*编辑*/
+        function edit(id) {
+            //隐藏按钮视图区
+            $("#viewOperate").hide();
+            $("#addOrEdit").show();
+            $("#btnAddOrEdit").val("确认编辑");
+            var params = {
+                token: getToken(),
+            }
+            tool.request("/logon/get/" + id, "post", params, function(data) {
+                $("#id").val(data.id);
+                $("#userName").val(data.userName);
+                $("#passWord").val(data.passWord);
+            })
+        }
+
+        /*删除*/
+        function del(id, userName) {
+            if (window.confirm("你确定要删除用户:" + userName + "?")) {
+                if (userName == "silly") {
+                    window.alert("silly用户不允许删除");
+                    return
+                }
+                var params = {
+                    token: getToken(),
+                    id: id,
+                }
+                tool.request("/logon/delete", "post", params, function(data) {
+                    window.alert("删除用户成功");
+                    init();
+                })
+            }
+        }
+
+        function getToken() {
+            return tool.getRequestParam("token");
+        }
+
+        function resetAddOrEditView() {
+            $("#id").val("");
+            $("#userName").val("");
+            $("#passWord").val("");
+            $("#btnAddOrEdit").val("确认添加");
+        }
+    </script>
+</head>
+
+<body>
+    <div>
+        <table id="content">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>用户名</td>
+                    <td>密码</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <hr/>
+    <div id="viewOperate">
+        <input type="button" value="添加" id="btnAdd" />
+    </div>
+    <div id="addOrEdit" style="margin: 20px auto;">
+        <input type="text" id="id" value="" style="display:none;"> 用户名:
+        <input type="text" id="userName" /> <br/> 密码：
+        <input type="password" id="passWord" /> <br/>
+        <input type="button" value="确认添加" id="btnAddOrEdit" />
+    </div>
+</body>
+
+</html>
